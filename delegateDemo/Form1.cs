@@ -1,19 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace delegateDemo
 {
     //1. wat is een delegate?
+    // Een delegate is een declaratie van een functie die een event zal afhandelen.
     delegate void toonLijstDelegate(List<int> mijnLijst,Form1 frm);
 
     public partial class Form1 : Form
     {
         //2. Waarvoor worden onderstaande lijsten gebruikt?
+        // randomGetallenLijst: Een list die gevuld wordt met random getallen als op de knop wordt geduwd,
+        // en dan op het scherm wordt weergegeven
+
+        // ChildForms: Elke keer dat je een nieuwe form aanmaakt in dit form wordt deze gestook in ChildForms
         readonly List<int> randomGetallenLijst = new List<int>();
         public List<Form1> ChildForms = new List<Form1>();
 
         //3. Leg uit wat een static variabele is? 
+        // Dit is een variable dat zal bestaan de ganse levensduur van het programma, en globaal is
         static int formNummer = 1;
         const int MAX_RANDOMGETALLEN = 10;
         const int MAX_RANDOMWAARDE = 100;
@@ -26,12 +33,16 @@ namespace delegateDemo
             //Deze staat in de klasse gedefinieerd als 'static int formNummer = 1;'.
             //Hoe komt het dat ondanks die in die declaratie '... = 1' staat elke form toch een 
             //oplopend nummer krijgt? Leg dit grondig uit.
+            //
+            // Omdat deze static is, wordt deze maar 1 keer aangemaakt.
+            // Ze gebruiken dus allemaal dezelfde variable
             this.Name = "Form"+formNummer.ToString();
             Form1.formNummer++;
 
             btnVulLijstMetRandomGetallen.Text = "Vul List<int> met " + MAX_RANDOMGETALLEN.ToString() + " randomgetallen";
             
             //5. Wat is het effect van het onderstaande statement op de Form?
+            // De text op te titlebar van de form wordt de naam van de form
             this.Text = this.Name;
         }
 
@@ -53,6 +64,8 @@ namespace delegateDemo
         //7. Onderstaande method genereert een aantal randomgetallen. Hoeveel getallen 
         //worden er gegenereerd? Wat is het grootste randomgetal dat kan worden 
         //gegenereerd?
+        // Max aantal random getallen: 10
+        // Max randomwaarde: 100
         private void BtnVulLijstMetRandomGetallen_Click(object sender, EventArgs e)
         {
             Random random = new Random();
@@ -72,6 +85,7 @@ namespace delegateDemo
         }
 
         //8. Waarvoor wordt het property OuderForm gebruikt?
+        // Deze wordt gebruikt om te verwijzen naar de partent-form van de huidige form.
         private Form1 ouderForm;
 
         public Form1 OuderForm
@@ -82,6 +96,8 @@ namespace delegateDemo
 
         //9. Je kan de naam van een parent van een childform tonen. Leg uit hoe de onderstaande 
         //method dit realiseert.
+        // Deze code kijkt eerst of er een partent form is (de 1e form heeft geen parent)
+        // Als deze er is, print hij de naam van deze form
         private void BtnToonParentNaam_Click(object sender, EventArgs e)
         {
             if (ouderForm != null)
@@ -96,6 +112,8 @@ namespace delegateDemo
 
         //10. Je kan de namen van alle childs van een parent tonen. Leg uit hoe de onderstaande 
         //method dit realiseert.
+        // Als er childforms zijn, loopt deze code over de list waar ze allemaal instaan,
+        // en print hij de namen.
         private void BtnToonChildForms_Click(object sender, EventArgs e)
         {
             if (ChildForms.Count>0)
@@ -132,6 +150,9 @@ namespace delegateDemo
             }
         }
 
+        // Als het niet safe is voor de code uit te voeren, maken we een invoke aan.
+        // Hierna schrijft hij simpelweg de namen naar het scherm.
+
         private void ToonRandomGetallenOpForm(List<int> randomGetallen, Form1 frm)
         {           
             if (frm.tbLogText.InvokeRequired)
@@ -156,11 +177,16 @@ namespace delegateDemo
         //gebruik gemaakt van delegates. We hebben dit mechanisme al in de les gezien.
         //Omschrijf voor deze toepassing hoe het delegate mechanisme zorgt dat data veilig 
         //van de parentform naar de childforms wordt geschreven.
+
+        
+        // Er gebeurd ongeveer hetzelfde hetzelfde als erboven, maar met als volgend als verschil:
+        // Nu loopen we door elk child form, en aangezien de functie toonRandomGetallenOpForm dingen toont
+        // Op de huidige form, zullen we dus alle child random getallen zien op de parent.
         private void BtnToonGetallenOpChild_Click(object sender, EventArgs e)
         {
                 foreach(Form1 f in ChildForms)
                 {
-                    ToonRandomGetallenOpForm(randomGetallenLijst, f);
+                ToonRandomGetallenOpForm(randomGetallenLijst, f);
                 }
         }
 
@@ -171,10 +197,16 @@ namespace delegateDemo
         {
             //Onderstaande lus wordt uitgevoerd wanneer je een willekeurige form sluit.
             //Wat wordt er in deze lus gedaan? 
+
+            // Er wordt geloopt door alle child-forms
+            // Deze loop doet de referentie naar ouderFrom weg, en sluit de huidige childForm
+
             //Om dit te testen start je de code op. Form1 opent. Je maakt een Kinder-form Form2 aan. 
             //Vervolgens maak je van Form2 een kinder-form Form3 aan. Sluit dan (met 'x') Form1. 
             //Wat stel je vast?
-            //
+            
+            //De 2 child-forms worden gesloten.
+
             //Voer vervolgens onderstaande test uit: maak eerst forms aan volgens onderstaand schema.
             //De -> geeft de parent-child relatie aan. Sluit vervolgens form2. Wat stel je vast?
             //form1 -> form2
@@ -184,6 +216,9 @@ namespace delegateDemo
             //form4 -> form6
             //form4 -> form7
 
+            //Form 4, 5,6,7 worden gesloten.
+            //Form2 wordt uit de lijst van childforms van form1 verwijderd
+
             for (var i = 0; i < ChildForms.Count; i++)
             {
                 MessageBox.Show(ChildForms[i].Name.ToString() + " wordt gesloten ");
@@ -192,7 +227,9 @@ namespace delegateDemo
                 //uncomment het onderstaande if-statement eens, run de code en maak van een parentform 
                 //een viertal childforms aan. Wat gebeurt er wanneer je de parent verwijderd?
                 //Hoe kan je ervoor zorgen dat jouw toepassing toch gecontroleerd kan worden gesloten?
-                //if (i == 2) throw (new ArgumentNullException());
+
+                //Alle aangepaakte forms correct opkuisen door alle referenties te verwijderen
+                if (i == 2) throw (new ArgumentNullException());
             }
 
             ChildForms.Clear();
@@ -203,6 +240,11 @@ namespace delegateDemo
             //Vervolgens maak je van Form2 een kinder-form Form3 aan. Sluit dan (met 'x') Form2. 
             //Wat stel je vast?
 
+            //Anders kan de applicatie alleen volledig gesloten worden via het originele form(form1).
+            //Vervolgens maak je van Form
+
+            //Niet alle forms sluiten
+
             if (OuderForm != null)
             {
                 var geslotenForm = sender as Form1;
@@ -212,6 +254,7 @@ namespace delegateDemo
         }
 
         //14. een makkelijke...wat doet de onderstaande method?
+        //Deze cleart de text uit de textbox van de huidige form.
         private void BtnClearLogText_Click(object sender, EventArgs e)
         {
             tbLogText.Clear();
